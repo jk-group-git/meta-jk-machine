@@ -1,0 +1,44 @@
+From 75e69f428e4ad25a28aa1505b24fda44d09c231f Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 25 Apr 2018 17:14:51 +0200
+Subject: [PATCH 7/8] add function to setup devicetree for pl-161 displays
+
+---
+ board/karo/tx6/tx6qdl.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/board/karo/tx6/tx6qdl.c b/board/karo/tx6/tx6qdl.c
+index 788eeec6cc..60da54f258 100644
+--- a/board/karo/tx6/tx6qdl.c
++++ b/board/karo/tx6/tx6qdl.c
+@@ -58,6 +58,9 @@
+ #define TEMPERATURE_HOT			80
+ #endif
+ 
++#define DISPLAY_TIMINGS_NODE_LVDS_1_7	"/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0/display-timings/ET0700"
++#define DISPLAY_TIMINGS_NODE_LVDS_1_10  "/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0/display-timings/ET1010"
++
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #define MUX_CFG_SION		IOMUX_PAD(0, 0, IOMUX_CONFIG_SION, 0, 0, 0)
+@@ -1578,10 +1581,15 @@ int ft_board_setup(void *blob, bd_t *bd)
+ 
+ 	karo_fdt_fixup_usb_otg(blob, "usbotg", "fsl,usbphy", "vbus-supply");
+ 
+-	if (!edt)
++	if (!edt) {
+ 		printf("Found EDT!\n");
+-	else
++		karo_fdt_remove_node(blob, DISPLAY_TIMINGS_NODE_LVDS_1_10);
++	}
++	else {
+ 		printf("No EDT Found!\n");
++		karo_fdt_remove_node(blob, DISPLAY_TIMINGS_NODE_LVDS_1_7);
++	}
++
+ #ifdef CONFIG_SYS_LVDS_IF
+ 	karo_fdt_update_fb_mode(blob, video_mode, "/lvds0-panel");
+ 	karo_fdt_update_fb_mode(blob, video_mode, "/lvds1-panel");
+-- 
+2.24.1
+

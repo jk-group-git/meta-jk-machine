@@ -1,0 +1,44 @@
+From a0fbc06fc9a8272ee0265154856533ad6c5d12c5 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 26 Sep 2018 14:57:26 +0200
+Subject: [PATCH 15/21] input: touch: edt: add special version for pl161
+
+special EMV conditions require for singletouch version of the firmware
+---
+ drivers/input/touchscreen/edt-ft5x06.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/drivers/input/touchscreen/edt-ft5x06.c b/drivers/input/touchscreen/edt-ft5x06.c
+index 8d3379a72715..42bdddf77dd4 100644
+--- a/drivers/input/touchscreen/edt-ft5x06.c
++++ b/drivers/input/touchscreen/edt-ft5x06.c
+@@ -1147,6 +1147,10 @@ static int __maybe_unused edt_ft5x06_ts_resume(struct device *dev)
+ static SIMPLE_DEV_PM_OPS(edt_ft5x06_ts_pm_ops,
+ 			 edt_ft5x06_ts_suspend, edt_ft5x06_ts_resume);
+ 
++static const struct edt_i2c_chip_data edt_ft5x06_st_data = {
++	.max_support_points = 1,
++};
++
+ static const struct edt_i2c_chip_data edt_ft5x06_data = {
+ 	.max_support_points = 5,
+ };
+@@ -1160,6 +1164,7 @@ static const struct edt_i2c_chip_data edt_ft6236_data = {
+ };
+ 
+ static const struct i2c_device_id edt_ft5x06_ts_id[] = {
++	{ .name = "edt-hi_st", .driver_data = (long)&edt_ft5x06_st_data },
+ 	{ .name = "edt-ft5x06", .driver_data = (long)&edt_ft5x06_data },
+ 	{ .name = "edt-ft5506", .driver_data = (long)&edt_ft5506_data },
+ 	/* Note no edt- prefix for compatibility with the ft6236.c driver */
+@@ -1170,6 +1175,7 @@ MODULE_DEVICE_TABLE(i2c, edt_ft5x06_ts_id);
+ 
+ #ifdef CONFIG_OF
+ static const struct of_device_id edt_ft5x06_of_match[] = {
++	{ .compatible = "edt,edt-hi-st", .data = &edt_ft5x06_st_data },
+ 	{ .compatible = "edt,edt-ft5206", .data = &edt_ft5x06_data },
+ 	{ .compatible = "edt,edt-ft5306", .data = &edt_ft5x06_data },
+ 	{ .compatible = "edt,edt-ft5406", .data = &edt_ft5x06_data },
+-- 
+2.23.0
+

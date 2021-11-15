@@ -1,0 +1,47 @@
+From 07481ad82aade6f2af464be2b6e0969698ef59c8 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Fri, 9 Aug 2019 10:30:56 +0200
+Subject: [PATCH 18/21] imx-ldb: use native videomode instead of first
+
+---
+ drivers/video/fbdev/mxc/ldb.c | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/video/fbdev/mxc/ldb.c b/drivers/video/fbdev/mxc/ldb.c
+index 7a42b6020719..d3e07c279a95 100644
+--- a/drivers/video/fbdev/mxc/ldb.c
++++ b/drivers/video/fbdev/mxc/ldb.c
+@@ -24,6 +24,7 @@
+ #include <video/of_videomode.h>
+ #include <video/videomode.h>
+ #include "mxc_dispdrv.h"
++#include <video/of_display_timing.h>
+ 
+ #define DRIVER_NAME	"ldb"
+ 
+@@ -789,6 +790,7 @@ static int ldb_probe(struct platform_device *pdev)
+ 		enum crtc crtc;
+ 		bool is_primary;
+ 		int ret;
++		struct display_timings *timings;
+ 
+ 		ret = of_property_read_u32(child, "reg", &i);
+ 		if (ret || i < 0 || i > 1 || i >= ldb->bus_mux_num) {
+@@ -863,7 +865,13 @@ static int ldb_probe(struct platform_device *pdev)
+ 			return -EINVAL;
+ 		}
+ 
+-		ret = of_get_videomode(child, &chan->vm, 0);
++		timings = of_get_display_timings(child);
++		if (!timings)
++			return -EINVAL;
++
++		ret = videomode_from_timings(timings, &chan->vm, timings->native_mode);
++		kfree(timings);
++		timings = NULL;
+ 		if (ret)
+ 			return -EINVAL;
+ 
+-- 
+2.23.0
+

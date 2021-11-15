@@ -1,0 +1,57 @@
+From e7427c0f51ff491cfa3cb40a6083587ac45deb0f Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Fri, 27 Apr 2018 11:39:12 +0200
+Subject: [PATCH 2/8] add pl-161_defconfig
+
+---
+ configs/tx6u-8133-pl161_defconfig | 38 +++++++++++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+ create mode 100644 configs/tx6u-8133-pl161_defconfig
+
+diff --git a/configs/tx6u-8133-pl161_defconfig b/configs/tx6u-8133-pl161_defconfig
+new file mode 100644
+index 0000000000..f89789bf61
+--- /dev/null
++++ b/configs/tx6u-8133-pl161_defconfig
+@@ -0,0 +1,38 @@
++CONFIG_ARM=y
++CONFIG_ARCH_MX6=y
++CONFIG_TARGET_TX6=y
++CONFIG_SYS_SDRAM_CHIP_SIZE=512
++CONFIG_TARGET_TX6U_EMMC=y
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYS_EXTRA_OPTIONS="MMC_BOOT_SIZE=1024,SYS_LVDS_IF"
++CONFIG_HUSH_PARSER=y
++CONFIG_SYS_PROMPT="TX6DL U-Boot > "
++# CONFIG_CMD_BOOTD is not set
++# CONFIG_CMD_BOOTZ is not set
++# CONFIG_CMD_GO is not set
++# CONFIG_CMD_IMI is not set
++# CONFIG_CMD_XIMG is not set
++# CONFIG_CMD_MEMORY is not set
++# CONFIG_CMD_CRC32 is not set
++# CONFIG_CMD_DM is not set
++# CONFIG_CMD_LOADB is not set
++# CONFIG_CMD_LOADS is not set
++CONFIG_CMD_I2C=y
++# CONFIG_CMD_FPGA is not set
++# CONFIG_CMD_ECHO is not set
++# CONFIG_CMD_ITEST is not set
++# CONFIG_CMD_SETEXPR is not set
++CONFIG_CMD_DHCP=y
++CONFIG_BOOTP_SUBNETMASK=y
++# CONFIG_CMD_NFS is not set
++CONFIG_CMD_PING=y
++CONFIG_CMD_MII=y
++CONFIG_CMD_CACHE=y
++CONFIG_CMD_TIME=y
++CONFIG_CMD_FUSE=y
++CONFIG_ENV_IS_IN_MMC=y
++CONFIG_DOS_PARTITION=y
++CONFIG_NETDEVICES=y
++CONFIG_FEC_MXC=y
++CONFIG_PHY_SMSC=y
++CONFIG_IMX_WATCHDOG=y
+-- 
+2.24.1
+

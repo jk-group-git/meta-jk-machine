@@ -1,0 +1,79 @@
+From 41604cd37d1d97d50fed0e71a0a9a3671896b5d3 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Fri, 22 Nov 2019 13:38:16 +0100
+Subject: [PATCH 20/21] video: mxc ldb: remove need for "primary" attribute
+
+---
+ drivers/video/fbdev/mxc/ldb.c | 20 +++-----------------
+ 1 file changed, 3 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/video/fbdev/mxc/ldb.c b/drivers/video/fbdev/mxc/ldb.c
+index d3e07c279a95..5050867dc1f5 100644
+--- a/drivers/video/fbdev/mxc/ldb.c
++++ b/drivers/video/fbdev/mxc/ldb.c
+@@ -92,7 +92,6 @@ struct ldb_data {
+ 	struct ldb_chan chan[2];
+ 	int bus_mux_num;
+ 	const struct bus_mux *buses;
+-	int primary_chno;
+ 	int ctrl_reg;
+ 	u32 ctrl;
+ 	bool spl_mode;
+@@ -303,10 +302,10 @@ static int ldb_init(struct mxc_dispdrv_handle *mddh,
+ 	struct fb_info *fbi = setting->fbi;
+ 	struct ldb_chan *chan;
+ 	struct fb_videomode fb_vm;
+-	int chno;
++	int chno = 0;
+ 
+-	chno = ldb->chan[ldb->primary_chno].is_used ?
+-		!ldb->primary_chno : ldb->primary_chno;
++	if (ldb->chan[0].is_used || !ldb->chan[0].online)
++		chno = 1;
+ 
+ 	chan = &ldb->chan[chno];
+ 
+@@ -743,7 +742,6 @@ static int ldb_probe(struct platform_device *pdev)
+ 	ldb->buses = ldb_info->buses;
+ 	ldb->ctrl_reg = ldb_info->ctrl_reg;
+ 	ldb->clk_fixup = ldb_info->clk_fixup;
+-	ldb->primary_chno = -1;
+ 
+ 	ext_ref = of_property_read_bool(np, "ext-ref");
+ 	if (!ext_ref && ldb_info->ext_bgref_cap)
+@@ -788,7 +786,6 @@ static int ldb_probe(struct platform_device *pdev)
+ 	for_each_child_of_node(np, child) {
+ 		struct ldb_chan *chan;
+ 		enum crtc crtc;
+-		bool is_primary;
+ 		int ret;
+ 		struct display_timings *timings;
+ 
+@@ -817,12 +814,6 @@ static int ldb_probe(struct platform_device *pdev)
+ 		chan->ldb = ldb;
+ 		chan->online = true;
+ 
+-		is_primary = of_property_read_bool(child, "primary");
+-
+-		if (ldb->bus_mux_num == 1 || (ldb->primary_chno == -1 &&
+-		    (is_primary || ldb->spl_mode || ldb->dual_mode)))
+-			ldb->primary_chno = chan->chno;
+-
+ 		ret = of_property_read_u32(child, "fsl,data-width",
+ 					   &data_width);
+ 		if (ret || (data_width != 18 && data_width != 24)) {
+@@ -909,11 +900,6 @@ static int ldb_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (ldb->primary_chno == -1) {
+-		dev_err(dev, "failed to know primary channel\n");
+-		return -EINVAL;
+-	}
+-
+ 	ldb->mddh = mxc_dispdrv_register(&ldb_drv);
+ 	mxc_dispdrv_setdata(ldb->mddh, ldb);
+ 	dev_set_drvdata(&pdev->dev, ldb);
+-- 
+2.23.0
+

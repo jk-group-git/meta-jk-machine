@@ -1,0 +1,30 @@
+From 7fc5460bb30a9d38dcf841b72ea40ac7dab23e05 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Mon, 2 Jul 2018 11:15:44 +0200
+Subject: [PATCH 07/21] ARM: config: pl-161: add gpio buttons
+
+---
+ arch/arm/configs/pl-161_defconfig | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/arch/arm/configs/pl-161_defconfig b/arch/arm/configs/pl-161_defconfig
+index 348aaa1ea9e8..ffebf2982799 100644
+--- a/arch/arm/configs/pl-161_defconfig
++++ b/arch/arm/configs/pl-161_defconfig
+@@ -112,12 +112,11 @@ CONFIG_SMSC_PHY=y
+ CONFIG_INPUT_POLLDEV=y
+ # CONFIG_INPUT_MOUSEDEV is not set
+ CONFIG_INPUT_EVDEV=y
+-# CONFIG_INPUT_KEYBOARD is not set
++CONFIG_KEYBOARD_GPIO=y
+ # CONFIG_INPUT_MOUSE is not set
+ CONFIG_INPUT_TOUCHSCREEN=y
+ # CONFIG_TOUCHSCREEN_CT36X_WLD is not set
+ CONFIG_TOUCHSCREEN_EDT_FT5X06=y
+-CONFIG_SERIO_LIBPS2=y
+ # CONFIG_LEGACY_PTYS is not set
+ # CONFIG_DEVMEM is not set
+ # CONFIG_DEVKMEM is not set
+-- 
+2.23.0
+

@@ -1,0 +1,42 @@
+From e92b05f8f4ba45826386460124643b61afdc330e Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 25 Apr 2018 17:15:42 +0200
+Subject: [PATCH 5/8] tx6/pl-161: remove some unneeded setup functions
+
+---
+ board/karo/tx6/tx6qdl.c | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/board/karo/tx6/tx6qdl.c b/board/karo/tx6/tx6qdl.c
+index b4a6fa9390..bd8e2da8ff 100644
+--- a/board/karo/tx6/tx6qdl.c
++++ b/board/karo/tx6/tx6qdl.c
+@@ -1525,12 +1525,6 @@ static struct node_info nodes[] = {
+ #define fdt_fixup_mtdparts(b,n,c) do { } while (0)
+ #endif
+ 
+-static const char *tx6_touchpanels[] = {
+-	"ti,tsc2007",
+-	"edt,edt-ft5x06",
+-	"eeti,egalax_ts",
+-};
+-
+ int ft_board_setup(void *blob, bd_t *bd)
+ {
+ 	const char *baseboard = getenv("baseboard");
+@@ -1546,12 +1540,7 @@ int ft_board_setup(void *blob, bd_t *bd)
+ 	if (stk5_v5)
+ 		karo_fdt_enable_node(blob, "stk5led", 0);
+ 
+-	fdt_fixup_mtdparts(blob, nodes, ARRAY_SIZE(nodes));
+-
+-	karo_fdt_fixup_touchpanel(blob, tx6_touchpanels,
+-				  ARRAY_SIZE(tx6_touchpanels));
+ 	karo_fdt_fixup_usb_otg(blob, "usbotg", "fsl,usbphy", "vbus-supply");
+-	karo_fdt_fixup_flexcan(blob, stk5_v5);
+ 
+ #ifdef CONFIG_SYS_LVDS_IF
+ 	karo_fdt_update_fb_mode(blob, video_mode, "/lvds0-panel");
+-- 
+2.24.1
+

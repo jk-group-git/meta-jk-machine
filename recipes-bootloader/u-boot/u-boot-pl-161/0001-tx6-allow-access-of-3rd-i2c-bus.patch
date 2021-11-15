@@ -1,0 +1,24 @@
+From 2afef54ee9a29d1075761bdbb5391c481a50c3bb Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 25 Apr 2018 15:22:27 +0200
+Subject: [PATCH 1/8] tx6: allow access of 3rd i2c bus
+
+---
+ include/configs/tx6.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/configs/tx6.h b/include/configs/tx6.h
+index 5faa9626f5..b3589e254d 100644
+--- a/include/configs/tx6.h
++++ b/include/configs/tx6.h
+@@ -317,6 +317,7 @@
+ #ifdef CONFIG_HARD_I2C
+ #define CONFIG_SYS_I2C_BASE		I2C1_BASE_ADDR
+ #define CONFIG_SYS_I2C_SPEED		400000
++#define CONFIG_SYS_I2C_MXC_I2C3
+ #endif /* CONFIG_HARD_I2C */
+ #if defined(CONFIG_TX6_REV)
+ #if CONFIG_TX6_REV == 0x1
+-- 
+2.24.1
+

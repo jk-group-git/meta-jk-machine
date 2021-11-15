@@ -1,0 +1,84 @@
+From 9709549c491ef4dc862b3e9a9219a92289f004bb Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 25 Apr 2018 16:16:37 +0200
+Subject: [PATCH 6/8] tx6: add functions to probe for presence of ft5x06
+
+---
+ board/karo/tx6/tx6qdl.c | 40 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 40 insertions(+)
+
+diff --git a/board/karo/tx6/tx6qdl.c b/board/karo/tx6/tx6qdl.c
+index bd8e2da8ff..788eeec6cc 100644
+--- a/board/karo/tx6/tx6qdl.c
++++ b/board/karo/tx6/tx6qdl.c
+@@ -44,6 +44,9 @@
+ #define TX6_I2C1_SCL_GPIO		IMX_GPIO_NR(3, 21)
+ #define TX6_I2C1_SDA_GPIO		IMX_GPIO_NR(3, 28)
+ 
++#define FT5X02_I2C_ADDR			0x38
++#define FT5X02_I2C_BUS			0x02
++
+ #ifdef CONFIG_MX6_TEMPERATURE_MIN
+ #define TEMPERATURE_MIN			CONFIG_MX6_TEMPERATURE_MIN
+ #else
+@@ -536,6 +539,38 @@ static int tx6_pmic_probe(void)
+ 	return -EINVAL;
+ }
+ 
++static int edt_probe(void)
++{
++	int ret = -1;
++	/* better be overcautios and memorize which bus was active before */
++	int bus_prev = 0;
++	int edt = -1;
++
++	debug("%s@%d: \n", __func__, __LINE__);
++
++	bus_prev = i2c_get_bus_num();
++	ret = i2c_set_bus_num(FT5X02_I2C_BUS);
++
++	if (ret) {
++		debug("I2C set bus returned %i for bus %i\n", ret, FT5X02_I2C_BUS);
++		return ret;
++	}
++
++	edt = i2c_probe(FT5X02_I2C_ADDR);
++
++	ret = i2c_set_bus_num(bus_prev);
++
++	if (ret) {
++		debug("I2C set bus returned %i for bus %i\n", ret, bus_prev);
++		return ret;
++	}
++
++	debug("I2C probe returned %d for addr 0x%02x\n", edt, FT5X02_I2C_ADDR);
++
++	return edt;
++
++}
++
+ static int tx6_mipi(void)
+ {
+ 	struct ocotp_regs *ocotp = (struct ocotp_regs *)OCOTP_BASE_ADDR;
+@@ -1531,6 +1566,7 @@ int ft_board_setup(void *blob, bd_t *bd)
+ 	int stk5_v5 = baseboard != NULL && (strcmp(baseboard, "stk5-v5") == 0);
+ 	const char *video_mode = karo_get_vmode(getenv("video_mode"));
+ 	int ret;
++	int edt = edt_probe();
+ 
+ 	ret = fdt_increase_size(blob, 4096);
+ 	if (ret) {
+@@ -1542,6 +1578,10 @@ int ft_board_setup(void *blob, bd_t *bd)
+ 
+ 	karo_fdt_fixup_usb_otg(blob, "usbotg", "fsl,usbphy", "vbus-supply");
+ 
++	if (!edt)
++		printf("Found EDT!\n");
++	else
++		printf("No EDT Found!\n");
+ #ifdef CONFIG_SYS_LVDS_IF
+ 	karo_fdt_update_fb_mode(blob, video_mode, "/lvds0-panel");
+ 	karo_fdt_update_fb_mode(blob, video_mode, "/lvds1-panel");
+-- 
+2.24.1
+

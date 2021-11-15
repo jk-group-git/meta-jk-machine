@@ -1,0 +1,54 @@
+From 47921c59da74ab21dd8deed04e8d930839749258 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Thu, 26 Apr 2018 14:38:51 +0200
+Subject: [PATCH 4/8] karo-fdt functions: add function to change string values
+
+---
+ board/karo/common/fdt.c  | 18 ++++++++++++++++++
+ board/karo/common/karo.h |  1 +
+ 2 files changed, 19 insertions(+)
+
+diff --git a/board/karo/common/fdt.c b/board/karo/common/fdt.c
+index 88d481f43f..2f22d9fb0e 100644
+--- a/board/karo/common/fdt.c
++++ b/board/karo/common/fdt.c
+@@ -147,6 +147,24 @@ void karo_fdt_remove_node(void *blob, const char *node)
+ 	karo_set_fdtsize(blob);
+ }
+ 
++void karo_fdt_set_node_char (void *blob, const char *node, char *name, char *val)
++{
++	int off = fdt_path_offset(blob, node);
++	int ret;
++
++	debug("setting node '%s' from DT to %s\n", node, val);
++	if (off < 0) {
++		printf("Could not find node '%s': %s\n", node,
++			fdt_strerror(off));
++	} else {
++		ret = fdt_setprop_string(blob, off, name, val);
++		if (ret)
++			printf("Failed to change node '%s': %s\n",
++				node, fdt_strerror(ret));
++	}
++	karo_set_fdtsize(blob);
++}
++
+ void karo_fdt_enable_node(void *blob, const char *node, int enable)
+ {
+ 	int off = fdt_path_offset(blob, node);
+diff --git a/board/karo/common/karo.h b/board/karo/common/karo.h
+index 3b56de8005..6618105136 100644
+--- a/board/karo/common/karo.h
++++ b/board/karo/common/karo.h
+@@ -29,6 +29,7 @@ void env_cleanup(void);
+ 
+ #ifdef CONFIG_OF_LIBFDT
+ void karo_fdt_remove_node(void *blob, const char *node);
++void karo_fdt_set_node_char (void *blob, const char *node, char *name, char *val);
+ void karo_fdt_move_fdt(void);
+ void karo_fdt_fixup_touchpanel(void *blob, const char *panels[],
+ 			size_t num_panels);
+-- 
+2.24.1
+

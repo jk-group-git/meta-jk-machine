@@ -1,0 +1,95 @@
+From 1797edb21bf2920881b89ebf1fc7ae422190331f Mon Sep 17 00:00:00 2001
+From: Richard Leitner <richard.leitner@skidata.com>
+Date: Mon, 6 Mar 2017 09:24:20 +0100
+Subject: [PATCH 02/21] usb: usb251xb: remove max_{power,current}_{sp,bp}
+ properties
+
+Remove the max_{power,current}_{sp,bp} properties of the usb251xb driver
+from devicetree. This is done to simplify the dt bindings as requested
+by Rob Herring in https://lkml.org/lkml/2017/2/15/1283. If those
+properties are ever needed by somebody they can be enabled again easily.
+
+Signed-off-by: Richard Leitner <richard.leitner@skidata.com>
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+---
+ .../devicetree/bindings/usb/usb251xb.txt      | 20 ----------------
+ drivers/usb/misc/usb251xb.c                   | 24 ++++---------------
+ 2 files changed, 4 insertions(+), 40 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/usb/usb251xb.txt b/Documentation/devicetree/bindings/usb/usb251xb.txt
+index 0c065f77658f..a5efd10ace9e 100644
+--- a/Documentation/devicetree/bindings/usb/usb251xb.txt
++++ b/Documentation/devicetree/bindings/usb/usb251xb.txt
+@@ -40,26 +40,6 @@ Optional properties :
+ 	device connected.
+  - sp-disabled-ports : Specifies the ports which will be self-power disabled
+  - bp-disabled-ports : Specifies the ports which will be bus-power disabled
+- - max-sp-power : Specifies the maximum current the hub consumes from an
+-	upstream port when operating as self-powered hub including the power
+-	consumption of a permanently attached peripheral if the hub is
+-	configured as a compound device. The value is given in mA in a 0 - 500
+-	range (default is 2).
+- - max-bp-power : Specifies the maximum current the hub consumes from an
+-	upstream port when operating as bus-powered hub including the power
+-	consumption of a permanently attached peripheral if the hub is
+-	configured as a compound device. The value is given in mA in a 0 - 500
+-	range (default is 100).
+- - max-sp-current : Specifies the maximum current the hub consumes from an
+-	upstream port when operating as self-powered hub EXCLUDING the power
+-	consumption of a permanently attached peripheral if the hub is
+-	configured as a compound device. The value is given in mA in a 0 - 500
+-	range (default is 2).
+- - max-bp-current : Specifies the maximum current the hub consumes from an
+-	upstream port when operating as bus-powered hub EXCLUDING the power
+-	consumption of a permanently attached peripheral if the hub is
+-	configured as a compound device. The value is given in mA in a 0 - 500
+-	range (default is 100).
+  - power-on-time : Specifies the time it takes from the time the host initiates
+ 	the power-on sequence to a port until the port has adequate power. The
+ 	value is given in ms in a 0 - 510 range (default is 100ms).
+diff --git a/drivers/usb/misc/usb251xb.c b/drivers/usb/misc/usb251xb.c
+index 4e18600dc9b4..3f9c3060c477 100644
+--- a/drivers/usb/misc/usb251xb.c
++++ b/drivers/usb/misc/usb251xb.c
+@@ -432,26 +432,6 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
+ 		}
+ 	}
+ 
+-	hub->max_power_sp = USB251XB_DEF_MAX_POWER_SELF;
+-	if (!of_property_read_u32(np, "max-sp-power", property_u32))
+-		hub->max_power_sp = min_t(u8, be32_to_cpu(*property_u32) / 2,
+-					  250);
+-
+-	hub->max_power_bp = USB251XB_DEF_MAX_POWER_BUS;
+-	if (!of_property_read_u32(np, "max-bp-power", property_u32))
+-		hub->max_power_bp = min_t(u8, be32_to_cpu(*property_u32) / 2,
+-					  250);
+-
+-	hub->max_current_sp = USB251XB_DEF_MAX_CURRENT_SELF;
+-	if (!of_property_read_u32(np, "max-sp-current", property_u32))
+-		hub->max_current_sp = min_t(u8, be32_to_cpu(*property_u32) / 2,
+-					    250);
+-
+-	hub->max_current_bp = USB251XB_DEF_MAX_CURRENT_BUS;
+-	if (!of_property_read_u32(np, "max-bp-current", property_u32))
+-		hub->max_current_bp = min_t(u8, be32_to_cpu(*property_u32) / 2,
+-					    250);
+-
+ 	hub->power_on_time = USB251XB_DEF_POWER_ON_TIME;
+ 	if (!of_property_read_u32(np, "power-on-time", property_u32))
+ 		hub->power_on_time = min_t(u8, be32_to_cpu(*property_u32) / 2,
+@@ -492,6 +472,10 @@ static int usb251xb_get_ofdata(struct usb251xb *hub,
+ 	/* The following parameters are currently not exposed to devicetree, but
+ 	 * may be as soon as needed.
+ 	 */
++	hub->max_power_sp = USB251XB_DEF_MAX_POWER_SELF;
++	hub->max_power_bp = USB251XB_DEF_MAX_POWER_BUS;
++	hub->max_current_sp = USB251XB_DEF_MAX_CURRENT_SELF;
++	hub->max_current_bp = USB251XB_DEF_MAX_CURRENT_BUS;
+ 	hub->bat_charge_en = USB251XB_DEF_BATTERY_CHARGING_ENABLE;
+ 	hub->boost_up = USB251XB_DEF_BOOST_UP;
+ 	hub->boost_x = USB251XB_DEF_BOOST_X;
+-- 
+2.23.0
+

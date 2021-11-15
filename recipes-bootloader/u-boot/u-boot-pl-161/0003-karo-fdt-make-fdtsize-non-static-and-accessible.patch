@@ -1,0 +1,40 @@
+From 010e774f799c8ecf04df02f1df791435280feeea Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Fri, 7 Jun 2019 10:08:18 +0200
+Subject: [PATCH 3/8] karo fdt: make fdtsize non static and accessible
+
+---
+ board/karo/common/fdt.c  | 2 +-
+ board/karo/common/karo.h | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/board/karo/common/fdt.c b/board/karo/common/fdt.c
+index 65b6a86a28..88d481f43f 100644
+--- a/board/karo/common/fdt.c
++++ b/board/karo/common/fdt.c
+@@ -36,7 +36,7 @@
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+-static void karo_set_fdtsize(void *fdt)
++void karo_set_fdtsize(void *fdt)
+ {
+ 	size_t fdtsize = getenv_ulong("fdtsize", 16, 0);
+ 
+diff --git a/board/karo/common/karo.h b/board/karo/common/karo.h
+index 06427e49d4..3b56de8005 100644
+--- a/board/karo/common/karo.h
++++ b/board/karo/common/karo.h
+@@ -45,6 +45,9 @@ int karo_fdt_update_fb_mode(void *blob, const char *name,
+ int karo_fdt_create_fb_mode(void *blob, const char *name,
+ 			struct fb_videomode *mode);
+ int karo_fdt_get_backlight_polarity(const void *blob);
++
++void karo_set_fdtsize(void *fdt);
++
+ #else
+ static inline void karo_fdt_remove_node(void *blob, const char *node)
+ {
+-- 
+2.24.1
+

@@ -1,0 +1,25 @@
+From f813740aaf1c02121782a2e85f196842fcde6554 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Mon, 21 Jan 2019 09:29:21 +0100
+Subject: [PATCH 16/21] set uart fifo limit to 1 char
+
+---
+ drivers/tty/serial/imx.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/tty/serial/imx.c b/drivers/tty/serial/imx.c
+index fe070db12a03..544a54192ba8 100644
+--- a/drivers/tty/serial/imx.c
++++ b/drivers/tty/serial/imx.c
+@@ -916,7 +916,7 @@ static void imx_break_ctl(struct uart_port *port, int break_state)
+ 
+ #define TXTL 2 /* reset default */
+ #define RXTL 1 /* For console port */
+-#define RXTL_UART 16 /* For uart */
++#define RXTL_UART 1 /* For uart */
+ 
+ static int imx_setup_ufcr(struct imx_port *sport, unsigned int mode)
+ {
+-- 
+2.23.0
+

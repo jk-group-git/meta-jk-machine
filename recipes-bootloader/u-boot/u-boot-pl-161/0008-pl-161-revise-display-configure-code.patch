@@ -1,0 +1,216 @@
+From 0feab105a4d52469fe5dfe514f543d642b7f51cd Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Thu, 13 Feb 2020 10:34:07 +0100
+Subject: [PATCH 8/8] pl-161: revise display configure code
+
+correct, cleanup, refactor
+---
+ board/karo/tx6/tx6qdl.c | 172 +++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 153 insertions(+), 19 deletions(-)
+
+diff --git a/board/karo/tx6/tx6qdl.c b/board/karo/tx6/tx6qdl.c
+index 60da54f258..8b666a5642 100644
+--- a/board/karo/tx6/tx6qdl.c
++++ b/board/karo/tx6/tx6qdl.c
+@@ -58,9 +58,11 @@
+ #define TEMPERATURE_HOT			80
+ #endif
+ 
+-#define DISPLAY_TIMINGS_NODE_LVDS_1_7	"/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0/display-timings/ET0700"
+-#define DISPLAY_TIMINGS_NODE_LVDS_1_10  "/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0/display-timings/ET1010"
+-
++#define LVDS_1_NODE			"/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@0"
++#define LVDS_2_NODE			"/soc/aips-bus@02000000/ldb@020e0008/lvds-channel@1"
++#define FB_2_NODE			"/fb@2"
++#define FB_1_NODE			"/fb@1"
++#define FB_0_NODE			"/fb@0"
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+ #define MUX_CFG_SION		IOMUX_PAD(0, 0, IOMUX_CONFIG_SION, 0, 0, 0)
+@@ -1563,13 +1565,157 @@ static struct node_info nodes[] = {
+ #define fdt_fixup_mtdparts(b,n,c) do { } while (0)
+ #endif
+ 
++enum jk_role {
++	JK_ROLE_INTERNAL = 1,
++	JK_ROLE_EXTERNAL = 2,
++};
++
++void set_disp(void* blob, int fb, const char* disp, const char* mapping, enum jk_role role)
++{
++	char *fb_name;
++	int off_fb = 0;
++	int off_lvds = 0;
++	int off_timings = 0;
++	int off_timing = 0;
++	char *timing = NULL;
++	char *timings = "display-timings";
++	uint32_t handle = 0;
++	if (!disp)
++		return;
++	switch (fb) {
++		case 1:
++			off_lvds = fdt_path_offset(blob, LVDS_1_NODE);
++			timing = malloc(strlen(disp) + 1);
++			strlcpy(timing, disp, strlen(disp) + 1);
++			fb_name = FB_1_NODE;
++			break;
++		case 2:
++			off_lvds = fdt_path_offset(blob, LVDS_2_NODE);
++			timing = malloc(strlen(disp) + 3);
++			strlcpy(timing, disp, strlen(disp) + 1);
++			strncat(timing, "_2", 2);
++			fb_name = FB_2_NODE;
++			break;
++		default:
++			return;
++	}
++	if (off_lvds < 0)
++		goto free;
++
++	off_timings = fdt_subnode_offset(blob, off_lvds, timings);
++
++	if (off_timings < 0) {
++		goto free;
++	}
++
++	off_timing = fdt_subnode_offset(blob, off_timings, timing);
++
++	if (off_timing < 0)
++		goto free;
++
++	handle = fdt_create_phandle(blob, off_timing);
++
++	if (!handle)
++		goto free;
++
++	if (fdt_setprop_u32(blob, off_timings, "native-mode", handle))
++		goto free;
++
++	if (mapping)
++		fdt_setprop_string(blob, off_lvds, "fsl,data-mapping", mapping);
++
++	off_fb = fdt_path_offset(blob, fb_name);
++	if (off_fb >= 0) {
++		switch (role) {
++			case JK_ROLE_EXTERNAL:
++				fdt_setprop_string(blob, off_fb, "disp_name", "external");
++				break;
++			case JK_ROLE_INTERNAL:
++				fdt_setprop_string(blob, off_fb, "disp_name", "internal");
++				break;
++			default:
++				break;
++		}
++	}
++
++free:
++	if(timing) {
++		free(timing);
++		timing = NULL;
++	}
++}
++
++void disable_disp(void* blob, int num)
++{
++	int off_lvds = 0;
++	int off_fb = 0;
++	switch (num){
++		case 0:
++			off_lvds = fdt_path_offset(blob, LVDS_1_NODE);
++			off_fb = fdt_path_offset(blob, FB_1_NODE);
++			break;
++		case 2:
++			off_lvds = fdt_path_offset(blob, LVDS_2_NODE);
++			off_fb = fdt_path_offset(blob, FB_2_NODE);
++			break;
++		default:
++			break;
++	}
++	if (off_lvds >= 0)
++		fdt_set_node_status(blob, off_lvds, FDT_STATUS_DISABLED, 0);
++	if (off_fb >= 0)
++		fdt_set_node_status(blob, off_fb, FDT_STATUS_DISABLED, 0);
++}
++
++void set_lcd_et0700(void* blob)
++{
++	set_disp(blob, 1, "ET0700", "jeida", JK_ROLE_INTERNAL);
++	disable_disp(blob, 2);
++}
++
++void set_lcd_et1010(void* blob)
++{
++	set_disp(blob, 1, "ET1010", "spwg", JK_ROLE_EXTERNAL);
++	disable_disp(blob, 2);
++}
++
++void parse_display_conf(void *blob)
++{
++	const char *disp0 = getenv("disp0");
++	const char *disp2 = getenv("disp2");
++	const char *disp0_lvdsmode = getenv("disp0_lvdsmode");
++	const char *disp2_lvdsmode = getenv("disp2_lvdsmode");
++	const char *dd    = getenv("dualdisplay");
++
++	if (!disp0_lvdsmode)
++		disp0_lvdsmode = "jeida";
++
++	if (!disp2_lvdsmode)
++		disp2_lvdsmode = "spwg";
++
++	if (disp0)
++		set_disp(blob, 1, disp0, disp0_lvdsmode, JK_ROLE_INTERNAL);
++	else {
++		if (!edt_probe())
++			set_lcd_et0700(blob);
++		else
++			set_lcd_et1010(blob);
++		disable_disp(blob, 2);
++		return;
++	}
++
++	if (disp2 && (simple_strtoull(dd, NULL, 10) != 0))
++		set_disp(blob, 2, disp2, disp2_lvdsmode, JK_ROLE_EXTERNAL);
++	else
++		disable_disp(blob, 2);
++
++}
++
+ int ft_board_setup(void *blob, bd_t *bd)
+ {
+ 	const char *baseboard = getenv("baseboard");
+ 	int stk5_v5 = baseboard != NULL && (strcmp(baseboard, "stk5-v5") == 0);
+-	const char *video_mode = karo_get_vmode(getenv("video_mode"));
+ 	int ret;
+-	int edt = edt_probe();
+ 
+ 	ret = fdt_increase_size(blob, 4096);
+ 	if (ret) {
+@@ -1581,21 +1727,9 @@ int ft_board_setup(void *blob, bd_t *bd)
+ 
+ 	karo_fdt_fixup_usb_otg(blob, "usbotg", "fsl,usbphy", "vbus-supply");
+ 
+-	if (!edt) {
+-		printf("Found EDT!\n");
+-		karo_fdt_remove_node(blob, DISPLAY_TIMINGS_NODE_LVDS_1_10);
+-	}
+-	else {
+-		printf("No EDT Found!\n");
+-		karo_fdt_remove_node(blob, DISPLAY_TIMINGS_NODE_LVDS_1_7);
+-	}
++	parse_display_conf(blob);
++	karo_set_fdtsize(blob);
+ 
+-#ifdef CONFIG_SYS_LVDS_IF
+-	karo_fdt_update_fb_mode(blob, video_mode, "/lvds0-panel");
+-	karo_fdt_update_fb_mode(blob, video_mode, "/lvds1-panel");
+-#else
+-	karo_fdt_update_fb_mode(blob, video_mode, "/lcd-panel");
+-#endif
+ 	return 0;
+ }
+ #endif /* CONFIG_OF_BOARD_SETUP */
+-- 
+2.24.1
+

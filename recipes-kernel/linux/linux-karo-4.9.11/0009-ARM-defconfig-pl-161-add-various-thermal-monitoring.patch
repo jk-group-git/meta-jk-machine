@@ -1,0 +1,31 @@
+From c0dc4e5c9267337eab4eee3b62b8e08bee454b95 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Tue, 3 Jul 2018 16:20:51 +0200
+Subject: [PATCH 09/21] ARM: defconfig: pl-161 add various thermal monitoring
+
+---
+ arch/arm/configs/pl-161_defconfig | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/arch/arm/configs/pl-161_defconfig b/arch/arm/configs/pl-161_defconfig
+index d19d39f42640..674c8becea77 100644
+--- a/arch/arm/configs/pl-161_defconfig
++++ b/arch/arm/configs/pl-161_defconfig
+@@ -139,8 +139,14 @@ CONFIG_POWER_RESET_SYSCON_POWEROFF=y
+ CONFIG_POWER_SUPPLY=y
+ CONFIG_SENSORS_GPIO_FAN=y
+ CONFIG_THERMAL=y
++CONFIG_THERMAL_GOV_FAIR_SHARE=y
++CONFIG_THERMAL_GOV_BANG_BANG=y
++CONFIG_THERMAL_GOV_USER_SPACE=y
++CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
+ CONFIG_CPU_THERMAL=y
++CONFIG_CLOCK_THERMAL=y
+ CONFIG_IMX_THERMAL=y
++CONFIG_DEVICE_THERMAL=y
+ CONFIG_WATCHDOG=y
+ CONFIG_IMX2_WDT=y
+ CONFIG_REGULATOR=y
+-- 
+2.23.0
+

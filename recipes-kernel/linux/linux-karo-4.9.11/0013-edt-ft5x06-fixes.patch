@@ -1,0 +1,56 @@
+From 0b6003931f69612a26621e50befe1f48ad14e97d Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 15 Aug 2018 15:31:02 +0200
+Subject: [PATCH 13/21] edt-ft5x06-fixes
+
+---
+ .../devicetree/bindings/input/touchscreen/edt-ft5x06.txt     | 2 +-
+ drivers/input/touchscreen/edt-ft5x06.c                       | 5 +++--
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/input/touchscreen/edt-ft5x06.txt b/Documentation/devicetree/bindings/input/touchscreen/edt-ft5x06.txt
+index 6db22103e2dd..025cf8c9324a 100644
+--- a/Documentation/devicetree/bindings/input/touchscreen/edt-ft5x06.txt
++++ b/Documentation/devicetree/bindings/input/touchscreen/edt-ft5x06.txt
+@@ -36,7 +36,7 @@ Optional properties:
+                 control gpios
+ 
+  - threshold:   allows setting the "click"-threshold in the range
+-                from 20 to 80.
++                from 0 to 80.
+ 
+  - gain:        allows setting the sensitivity in the range from 0 to
+                 31. Note that lower values indicate higher
+diff --git a/drivers/input/touchscreen/edt-ft5x06.c b/drivers/input/touchscreen/edt-ft5x06.c
+index 1334df65e513..eec3c50512b5 100644
+--- a/drivers/input/touchscreen/edt-ft5x06.c
++++ b/drivers/input/touchscreen/edt-ft5x06.c
+@@ -477,7 +477,7 @@ static EDT_ATTR(gain, S_IWUSR | S_IRUGO, WORK_REGISTER_GAIN,
+ static EDT_ATTR(offset, S_IWUSR | S_IRUGO, WORK_REGISTER_OFFSET,
+ 		M09_REGISTER_OFFSET, 0, 31);
+ static EDT_ATTR(threshold, S_IWUSR | S_IRUGO, WORK_REGISTER_THRESHOLD,
+-		M09_REGISTER_THRESHOLD, 20, 80);
++		M09_REGISTER_THRESHOLD, 0, 80);
+ static EDT_ATTR(report_rate, S_IWUSR | S_IRUGO, WORK_REGISTER_REPORT_RATE,
+ 		NO_REGISTER, 3, 14);
+ 
+@@ -599,7 +599,7 @@ static int edt_ft5x06_work_mode(struct edt_ft5x06_ts_data *tsdata)
+ 				  tsdata->gain);
+ 	edt_ft5x06_register_write(tsdata, reg_addr->reg_offset,
+ 				  tsdata->offset);
+-	if (reg_addr->reg_report_rate)
++	if (reg_addr->reg_report_rate != NO_REGISTER)
+ 		edt_ft5x06_register_write(tsdata, reg_addr->reg_report_rate,
+ 				  tsdata->report_rate);
+ 
+@@ -922,6 +922,7 @@ edt_ft5x06_ts_set_regs(struct edt_ft5x06_ts_data *tsdata)
+ 
+ 	case EDT_M09:
+ 		reg_addr->reg_threshold = M09_REGISTER_THRESHOLD;
++		reg_addr->reg_report_rate = NO_REGISTER;
+ 		reg_addr->reg_gain = M09_REGISTER_GAIN;
+ 		reg_addr->reg_offset = M09_REGISTER_OFFSET;
+ 		reg_addr->reg_num_x = M09_REGISTER_NUM_X;
+-- 
+2.23.0
+

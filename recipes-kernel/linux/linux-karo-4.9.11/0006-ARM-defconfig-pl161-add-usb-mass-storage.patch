@@ -1,0 +1,38 @@
+From 3d0c661876a829fe3dd047f84a2150a4c1b6b734 Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Mon, 11 Jun 2018 14:54:51 +0200
+Subject: [PATCH 06/21] ARM: defconfig: pl161: add usb mass storage
+
+---
+ arch/arm/configs/pl-161_defconfig | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
+
+diff --git a/arch/arm/configs/pl-161_defconfig b/arch/arm/configs/pl-161_defconfig
+index 9dc38cde6e34..348aaa1ea9e8 100644
+--- a/arch/arm/configs/pl-161_defconfig
++++ b/arch/arm/configs/pl-161_defconfig
+@@ -178,6 +178,21 @@ CONFIG_USB=y
+ CONFIG_USB_OTG_WHITELIST=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_EHCI_MXC=y
++CONFIG_USB_STORAGE=m
++CONFIG_USB_STORAGE_REALTEK=m
++CONFIG_USB_STORAGE_DATAFAB=m
++CONFIG_USB_STORAGE_FREECOM=m
++CONFIG_USB_STORAGE_ISD200=m
++CONFIG_USB_STORAGE_USBAT=m
++CONFIG_USB_STORAGE_SDDR09=m
++CONFIG_USB_STORAGE_SDDR55=m
++CONFIG_USB_STORAGE_JUMPSHOT=m
++CONFIG_USB_STORAGE_ALAUDA=m
++CONFIG_USB_STORAGE_ONETOUCH=m
++CONFIG_USB_STORAGE_KARMA=m
++CONFIG_USB_STORAGE_CYPRESS_ATACB=m
++CONFIG_USB_STORAGE_ENE_UB6250=m
++CONFIG_USB_UAS=m
+ CONFIG_USB_CHIPIDEA=y
+ CONFIG_USB_CHIPIDEA_HOST=y
+ CONFIG_USB_HUB_USB251XB=y
+-- 
+2.23.0
+

@@ -1,0 +1,105 @@
+From 3ad45c68d52fbb2f2e509e5fd0ea98f1a102265e Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Wed, 4 Jul 2018 11:39:17 +0200
+Subject: [PATCH 11/21] imx-thermal: add support for thermal zone in devicetree
+
+---
+ drivers/thermal/imx_thermal.c | 32 +++++++++++++++++++++++++++++---
+ 1 file changed, 29 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index 586b3f16023e..986067048f44 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -218,6 +218,7 @@ static struct thermal_soc_data thermal_imx7d_data = {
+ };
+ 
+ struct imx_thermal_data {
++	struct thermal_zone_device *tzof;
+ 	struct thermal_zone_device *tz;
+ 	struct thermal_cooling_device *cdev[2];
+ 	enum thermal_device_mode mode;
+@@ -278,9 +279,8 @@ static void imx_set_alarm_temp(struct imx_thermal_data *data,
+ 		     alarm_value << soc_data->high_alarm_shift);
+ }
+ 
+-static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
++static int __imx_get_temp(struct thermal_zone_device *tz, struct imx_thermal_data *data, int *temp)
+ {
+-	struct imx_thermal_data *data = tz->devdata;
+ 	const struct thermal_soc_data *soc_data = data->socdata;
+ 	struct regmap *map = data->tempmon;
+ 	unsigned int n_meas;
+@@ -371,10 +371,15 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+ 		enable_irq(data->irq);
+ 	}
+ 	mutex_unlock(&data->mutex);
+-
+ 	return 0;
+ }
+ 
++static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
++{
++	struct imx_thermal_data *data = tz->devdata;
++	return __imx_get_temp(tz, data, temp);
++}
++
+ static int imx_get_mode(struct thermal_zone_device *tz,
+ 			enum thermal_device_mode *mode)
+ {
+@@ -385,6 +390,17 @@ static int imx_get_mode(struct thermal_zone_device *tz,
+ 	return 0;
+ }
+ 
++static int imx_of_read_temp(void *data, int *temp) {
++	struct imx_thermal_data *tdata = data;
++	if (!tdata->tzof)
++		return -ENODEV;
++	return __imx_get_temp(tdata->tzof, tdata, temp);
++}
++
++static const struct thermal_zone_of_device_ops imx_of_thermal_ops = {
++	.get_temp = imx_of_read_temp,
++};
++
+ static int imx_set_mode(struct thermal_zone_device *tz,
+ 			enum thermal_device_mode mode)
+ {
+@@ -855,6 +871,7 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	mutex_init(&data->mutex);
++	dev_warn(&pdev->dev, "mutex is at %p", &data->mutex);
+ 	data->tz = thermal_zone_device_register("imx_thermal_zone",
+ 						IMX_TRIP_NUM,
+ 						(1 << IMX_TRIP_NUM) - 1, data,
+@@ -907,10 +924,17 @@ static int imx_thermal_probe(struct platform_device *pdev)
+ 	data->irq_enabled = true;
+ 	data->mode = THERMAL_DEVICE_ENABLED;
+ 
++	data->tzof = thermal_zone_of_sensor_register(&pdev->dev, 1,
++						     data,
++						     &imx_of_thermal_ops);
++	if (IS_ERR(data->tzof))
++		data->tzof = NULL;
++
+ 	/* register the busfreq notifier called in low bus freq */
+ 	if (data->socdata->version != TEMPMON_IMX7)
+ 		register_busfreq_notifier(&thermal_notifier);
+ 
++
+ 	return 0;
+ }
+ 
+@@ -919,6 +943,8 @@ static int imx_thermal_remove(struct platform_device *pdev)
+ 	struct imx_thermal_data *data = platform_get_drvdata(pdev);
+ 	struct regmap *map = data->tempmon;
+ 
++	thermal_zone_of_sensor_unregister(&pdev->dev, data->tzof);
++
+ 	/* Disable measurements */
+ 	regmap_write(map, data->socdata->sensor_ctrl + REG_SET,
+ 		     data->socdata->power_down_mask);
+-- 
+2.23.0
+

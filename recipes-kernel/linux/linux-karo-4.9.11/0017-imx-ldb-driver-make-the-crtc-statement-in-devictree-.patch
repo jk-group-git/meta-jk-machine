@@ -1,0 +1,83 @@
+From 3a1d8218d3854d67c1bbdcc46266d51272de728b Mon Sep 17 00:00:00 2001
+From: Daniel Wagener <daniel.wagener@kernelconcepts.de>
+Date: Thu, 6 Jun 2019 12:14:41 +0200
+Subject: [PATCH 17/21] imx ldb driver: make the crtc statement in devictree
+ work as expected
+
+---
+ drivers/video/fbdev/mxc/ldb.c | 39 ++++++++++++++++++++++++++++++-----
+ 1 file changed, 34 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/video/fbdev/mxc/ldb.c b/drivers/video/fbdev/mxc/ldb.c
+index 1d6c9e08590c..7a42b6020719 100644
+--- a/drivers/video/fbdev/mxc/ldb.c
++++ b/drivers/video/fbdev/mxc/ldb.c
+@@ -500,6 +500,35 @@ static int ldb_setup(struct mxc_dispdrv_handle *mddh,
+ 	return ret;
+ }
+ 
++void ldb_mux_lvds(struct ldb_data *ldb, int chno, enum crtc output)
++{
++	switch (output) {
++		case CRTC_IPU1_DI1:
++			switch(chno){
++				case 1:
++					ldb->ctrl |= LDB_CH1_MODE_EN_TO_DI1;
++					break;
++				case 0:
++				default:
++					ldb->ctrl |= LDB_CH0_MODE_EN_TO_DI1;
++					break;
++			}
++			break;
++		case CRTC_IPU1_DI0:
++		default:
++			switch(chno) {
++				case 1:
++					ldb->ctrl |= LDB_CH1_MODE_EN_TO_DI0;
++					break;
++				case 0:
++				default:
++					ldb->ctrl |= LDB_CH0_MODE_EN_TO_DI0;
++					break;
++			}
++			break;
++	}
++}
++
+ static int ldb_enable(struct mxc_dispdrv_handle *mddh,
+ 		      struct fb_info *fbi)
+ {
+@@ -512,15 +541,14 @@ static int ldb_enable(struct mxc_dispdrv_handle *mddh,
+ 	ret = find_ldb_chno(ldb, fbi, &chno);
+ 	if (ret < 0)
+ 		return ret;
++	other_chno = chno ? 0 : 1;
+ 
+ 	chan = ldb->chan[chno];
+ 
+ 	bus_mux = ldb->buses[chno];
+ 
+-	if (ldb->spl_mode || ldb->dual_mode) {
+-		other_chno = chno ? 0 : 1;
++	if (ldb->spl_mode || ldb->dual_mode)
+ 		clk_prepare_enable(ldb->ldb_di_clk[other_chno]);
+-	}
+ 
+ 	if ((ldb->spl_mode || ldb->dual_mode) &&
+ 	    bus_mux.reg == INVALID_BUS_REG) {
+@@ -540,8 +568,9 @@ static int ldb_enable(struct mxc_dispdrv_handle *mddh,
+ 			ldb->ctrl |= LDB_CH0_MODE_EN_TO_DI0 |
+ 				     LDB_CH1_MODE_EN_TO_DI0;
+ 		else
+-			ldb->ctrl |= chno ? LDB_CH1_MODE_EN_TO_DI1 :
+-					    LDB_CH0_MODE_EN_TO_DI0;
++			ldb_mux_lvds(ldb, chno, chan.crtc);
++			if (ldb->chan[other_chno].online)
++				ldb_mux_lvds(ldb, other_chno, ldb->chan[other_chno].crtc);
+ 	}
+ 
+ 	regmap_write(ldb->regmap, ldb->ctrl_reg, ldb->ctrl);
+-- 
+2.23.0
+
