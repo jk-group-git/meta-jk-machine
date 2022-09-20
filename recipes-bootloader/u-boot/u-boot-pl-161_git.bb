@@ -13,7 +13,7 @@ PV = "v2015.10-rc2+git${SRCPV}-${jk_version}"
 
 SRCREV = "KARO-TX6-2018-01-08"
 SRCBRANCH = "master"
-SRC_URI = "git://github.com/karo-electronics/karo-tx-uboot.git;branch=${SRCBRANCH} \
+SRC_URI = "git://github.com/karo-electronics/karo-tx-uboot.git;branch=${SRCBRANCH};protocol=https;rev=${SRCREV} \
            file://0001-tx6-allow-access-of-3rd-i2c-bus.patch \
            file://0002-add-pl-161_defconfig.patch \
            file://0003-karo-fdt-make-fdtsize-non-static-and-accessible.patch \
