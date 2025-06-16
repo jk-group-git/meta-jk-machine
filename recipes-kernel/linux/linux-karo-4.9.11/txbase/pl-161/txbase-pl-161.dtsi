@@ -255,6 +255,17 @@ TX_LDB {
 				vsync-len = <2>;
 				vfront-porch = <5>;
 			};
+			timing03: ETM0700G0EDHA {
+				clock-frequency = <27200000>;
+				hactive = <800>;
+				hfront-porch = <21>;
+				hback-porch = <9>;
+				hsync-len = <30>;
+				vactive = <480>;
+				vfront-porch = <14>;
+				vback-porch = <10>;
+				vsync-len = <24>;
+			};
 		};
 	};
 
