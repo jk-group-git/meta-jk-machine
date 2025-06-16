@@ -12,30 +12,31 @@ LOCALVERSION = "-${jk_version}"
 
 require recipes-kernel/linux/linux-imx.inc
 
-SRC_URI = "git://source.codeaurora.org/external/imx/linux-imx;protocol=https;branch=${SRCBRANCH} \
-           file://defconfig \
-           file://set-enet_ref_clk-to-50-mhz.patch \
-           file://ethernet-update-driver.patch \
-           file://0001-usb-misc-add-USB251xB-xBi-Hi-Speed-Hub-Controller-Dr.patch \
-           file://0002-usb-usb251xb-remove-max_-power-current-_-sp-bp-prope.patch \
-           file://0003-usb-usb251xb-dt-add-unit-suffix-to-oc-delay-and-powe.patch \
-           file://0004-doc-dt-bindings-usb251xb-mark-reg-as-required.patch \
-           file://0005-add-pl-161_defconfig.patch \
-           file://0006-ARM-defconfig-pl161-add-usb-mass-storage.patch \
-           file://0007-ARM-config-pl-161-add-gpio-buttons.patch \
-           file://0008-ARM-defconfig-pl-161-add-gpio-fan.patch \
-           file://0009-ARM-defconfig-pl-161-add-various-thermal-monitoring.patch \
-           file://0011-imx-thermal-add-support-for-thermal-zone-in-devicetr.patch \
-           file://0012-Input-edt-ft5x06-make-distinction-between-m06-m09-ge.patch \
-           file://0013-edt-ft5x06-fixes.patch \
-           file://0014-add-support-for-edt-m12-touch.patch \
-           file://0015-input-touch-edt-add-special-version-for-pl161.patch \
-           file://0016-set-uart-fifo-limit-to-1-char.patch \
-           file://0017-imx-ldb-driver-make-the-crtc-statement-in-devictree-.patch \
-           file://0018-imx-ldb-use-native-videomode-instead-of-first.patch \
-           file://0019-ARM-defconfig-add-new-defconfigs-for-pl-900-and-pl-t.patch \
-           file://0020-video-mxc-ldb-remove-need-for-primary-attribute.patch \
-           file://0021-video-mxc-allow-to-set-an-fb-name-in-devicetree.patch \
+SRC_URI = " \
+git://github.com/nxp-imx/linux-imx.git;protocol=https;branch=${SRCBRANCH} \
+file://defconfig \
+file://set-enet_ref_clk-to-50-mhz.patch \
+file://ethernet-update-driver.patch \
+file://0001-usb-misc-add-USB251xB-xBi-Hi-Speed-Hub-Controller-Dr.patch \
+file://0002-usb-usb251xb-remove-max_-power-current-_-sp-bp-prope.patch \
+file://0003-usb-usb251xb-dt-add-unit-suffix-to-oc-delay-and-powe.patch \
+file://0004-doc-dt-bindings-usb251xb-mark-reg-as-required.patch \
+file://0005-add-pl-161_defconfig.patch \
+file://0006-ARM-defconfig-pl161-add-usb-mass-storage.patch \
+file://0007-ARM-config-pl-161-add-gpio-buttons.patch \
+file://0008-ARM-defconfig-pl-161-add-gpio-fan.patch \
+file://0009-ARM-defconfig-pl-161-add-various-thermal-monitoring.patch \
+file://0011-imx-thermal-add-support-for-thermal-zone-in-devicetr.patch \
+file://0012-Input-edt-ft5x06-make-distinction-between-m06-m09-ge.patch \
+file://0013-edt-ft5x06-fixes.patch \
+file://0014-add-support-for-edt-m12-touch.patch \
+file://0015-input-touch-edt-add-special-version-for-pl161.patch \
+file://0016-set-uart-fifo-limit-to-1-char.patch \
+file://0017-imx-ldb-driver-make-the-crtc-statement-in-devictree-.patch \
+file://0018-imx-ldb-use-native-videomode-instead-of-first.patch \
+file://0019-ARM-defconfig-add-new-defconfigs-for-pl-900-and-pl-t.patch \
+file://0020-video-mxc-ldb-remove-need-for-primary-attribute.patch \
+file://0021-video-mxc-allow-to-set-an-fb-name-in-devicetree.patch \
 "
 
 DEPENDS += "lzop-native bc-native"
